@@ -61,6 +61,7 @@ export default function TelaInicio({ navigation }: TelaInicioProps) {
     const [clienteLocation, setClienteLocation] = useState<{ lat: number, lng: number } | null>(null);
     const [raioFiltro, setRaioFiltro] = useState<number>(10); // km
     const [pesquisa, setPesquisa] = useState<string>('');
+    const [categoriaFiltro, setCategoriaFiltro] = useState<string | null>(null);
 
     const { usuario } = useAuth();
 
@@ -97,7 +98,7 @@ export default function TelaInicio({ navigation }: TelaInicioProps) {
         }
     };
 
-    // Filtrar serviços por distância e pesquisa
+    // Filtrar serviços por pesquisa, categoria e distância
     const servicosFiltrados = servicos.filter(s => {
         // Filtro de pesquisa
         if (pesquisa.trim()) {
@@ -105,6 +106,15 @@ export default function TelaInicio({ navigation }: TelaInicioProps) {
             const matchTitulo = s.title?.toLowerCase().includes(termo);
             const matchCategoria = s.category?.toLowerCase().includes(termo);
             if (!matchTitulo && !matchCategoria) return false;
+        }
+
+        // Filtro de categoria
+        if (categoriaFiltro) {
+            const categoryMap: { [key: string]: string } = {
+                '1': 'home-repairs', '2': 'beauty', '3': 'tech',
+                '4': 'cleaning', '5': 'education', '6': 'health'
+            };
+            if (s.category !== categoryMap[categoriaFiltro]) return false;
         }
 
         // Filtro de distância
@@ -140,14 +150,25 @@ export default function TelaInicio({ navigation }: TelaInicioProps) {
         return CATEGORIA_ICONES[categoria] || 'construct';
     };
 
-    const renderCategoria: ListRenderItem<Categoria> = ({ item }) => (
-        <TouchableOpacity style={estilos.categoriaItem}>
-            <View style={estilos.categoriaIconeContainer}>
-                <Ionicons name={item.icone as any} size={24} color="#007AFF" />
-            </View>
-            <Text style={estilos.categoriaTexto}>{item.nome}</Text>
-        </TouchableOpacity>
-    );
+    const renderCategoria: ListRenderItem<Categoria> = ({ item }) => {
+        const isSelected = categoriaFiltro === item.id;
+        return (
+            <TouchableOpacity
+                style={estilos.categoriaItem}
+                onPress={() => setCategoriaFiltro(isSelected ? null : item.id)}
+            >
+                <View style={[
+                    estilos.categoriaIconeContainer,
+                    isSelected && { backgroundColor: '#007AFF' }
+                ]}>
+                    <Ionicons name={item.icone as any} size={24} color={isSelected ? '#FFF' : '#007AFF'} />
+                </View>
+                <Text style={[estilos.categoriaTexto, isSelected && { color: '#007AFF', fontWeight: '600' }]}>
+                    {item.nome}
+                </Text>
+            </TouchableOpacity>
+        );
+    };
 
     const renderServico: ListRenderItem<any> = ({ item }) => (
         <TouchableOpacity
@@ -343,18 +364,26 @@ export default function TelaInicio({ navigation }: TelaInicioProps) {
             {/* Serviços */}
             <View style={estilos.secaoHeader}>
                 <Text style={estilos.secaoTitulo}>Serviços Disponíveis</Text>
-                <Text style={estilos.contador}>{servicos.length} encontrados</Text>
+                <Text style={estilos.contador}>{servicosFiltrados.length} encontrados</Text>
             </View>
 
             {
-                servicos.length === 0 ? (
+                servicosFiltrados.length === 0 ? (
                     <View style={estilos.vazioContainer}>
                         <Ionicons name="search-outline" size={48} color="#C7C7CC" />
                         <Text style={estilos.vazioTexto}>Nenhum serviço encontrado</Text>
+                        {(pesquisa || categoriaFiltro) && (
+                            <TouchableOpacity
+                                style={{ marginTop: 12, paddingHorizontal: 16, paddingVertical: 8, backgroundColor: '#007AFF', borderRadius: 8 }}
+                                onPress={() => { setPesquisa(''); setCategoriaFiltro(null); }}
+                            >
+                                <Text style={{ color: '#FFF', fontWeight: '600' }}>Limpar filtros</Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
                 ) : (
                     <View style={estilos.servicosLista}>
-                        {servicos.map((servico) => (
+                        {servicosFiltrados.map((servico) => (
                             <TouchableOpacity
                                 key={servico._id}
                                 style={estilos.servicoCard}
@@ -362,11 +391,19 @@ export default function TelaInicio({ navigation }: TelaInicioProps) {
                                 activeOpacity={0.7}
                             >
                                 <View style={estilos.servicoIconeContainer}>
-                                    <Ionicons
-                                        name={getIconeCategoria(servico.category) as any}
-                                        size={28}
-                                        color="#007AFF"
-                                    />
+                                    {servico.images && servico.images.length > 0 ? (
+                                        <Image
+                                            source={{ uri: servico.images[0] }}
+                                            style={estilos.servicoImagem}
+                                            resizeMode="cover"
+                                        />
+                                    ) : (
+                                        <Ionicons
+                                            name={getIconeCategoria(servico.category) as any}
+                                            size={28}
+                                            color="#007AFF"
+                                        />
+                                    )}
                                 </View>
                                 <View style={estilos.servicoInfo}>
                                     <Text style={estilos.servicoTitulo}>{servico.title}</Text>
