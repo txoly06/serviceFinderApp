@@ -327,6 +327,13 @@ export async function buscarAvaliacoes(servicoId: string): Promise<any> {
     return dados;
 }
 
+// Verificar se já existe avaliação para um pedido
+export async function verificarAvaliacaoExiste(requestId: string): Promise<boolean> {
+    const resposta = await fetch(`${API_URL}/api/reviews/request/${requestId}/exists`);
+    const dados = await resposta.json();
+    return dados.data?.exists || false;
+}
+
 // ========================================
 // FUNÇÕES DE PESQUISA
 // ========================================

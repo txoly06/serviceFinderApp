@@ -9,7 +9,7 @@
 // Procure por algo como 192.168.x.x
 
 // URL do backend (IP local da máquina)
-export const API_URL = 'http://192.168.1.217:5000';
+export const API_URL = 'http://192.168.8.237:5000';
 
 // Alternativa: Se estiver usando emulador Android
 // export const API_URL = 'http://10.0.2.2:5000';

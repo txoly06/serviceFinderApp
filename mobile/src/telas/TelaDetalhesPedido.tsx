@@ -4,7 +4,7 @@
 // Informações completas de um pedido
 // Ações disponíveis por status
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -20,7 +20,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../tipos';
 import { useAuth } from '../contextos/AuthContext';
-import { atualizarStatusPedido, iniciarConversa } from '../servicos/api';
+import { atualizarStatusPedido, iniciarConversa, verificarAvaliacaoExiste } from '../servicos/api';
 
 type TelaDetalhesPedidoProps = {
     navigation: NativeStackNavigationProp<RootStackParamList, 'DetalhesPedido'>;
@@ -41,8 +41,18 @@ export default function TelaDetalhesPedido({ navigation, route }: TelaDetalhesPe
     const { token, usuario } = useAuth();
     const [carregando, setCarregando] = useState(false);
     const [statusAtual, setStatusAtual] = useState(pedido.status);
+    const [jaAvaliou, setJaAvaliou] = useState(false);
 
     const statusConfig = STATUS_CONFIG[statusAtual] || STATUS_CONFIG.pending;
+
+    // Verificar se já avaliou este pedido
+    useEffect(() => {
+        if (statusAtual === 'completed' && usuario?.tipo !== 'provider') {
+            verificarAvaliacaoExiste(pedido._id).then(exists => {
+                setJaAvaliou(exists);
+            });
+        }
+    }, [pedido._id, statusAtual]);
 
     const formatarData = (data: string) => {
         return new Date(data).toLocaleDateString('pt-BR', {
@@ -329,8 +339,8 @@ export default function TelaDetalhesPedido({ navigation, route }: TelaDetalhesPe
                         </View>
                     )}
 
-                    {/* Avaliar Serviço (cliente após conclusão) */}
-                    {!isProvider && statusAtual === 'completed' && (
+                    {/* Avaliar Serviço (cliente após conclusão, apenas se ainda não avaliou) */}
+                    {!isProvider && statusAtual === 'completed' && !jaAvaliou && (
                         <View style={estilos.acoesContainer}>
                             <TouchableOpacity
                                 style={estilos.botaoAvaliar}
@@ -339,6 +349,14 @@ export default function TelaDetalhesPedido({ navigation, route }: TelaDetalhesPe
                                 <Ionicons name="star" size={20} color="#FFFFFF" />
                                 <Text style={estilos.botaoAvaliarTexto}>Avaliar Serviço</Text>
                             </TouchableOpacity>
+                        </View>
+                    )}
+                    {!isProvider && statusAtual === 'completed' && jaAvaliou && (
+                        <View style={estilos.acoesContainer}>
+                            <View style={[estilos.botaoAvaliar, { backgroundColor: '#34C759' }]}>
+                                <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
+                                <Text style={estilos.botaoAvaliarTexto}>Já Avaliado</Text>
+                            </View>
                         </View>
                     )}
                 </>

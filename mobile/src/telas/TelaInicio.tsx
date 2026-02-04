@@ -25,6 +25,7 @@ import { useAuth } from '../contextos/AuthContext';
 import { SkeletonList } from '../componentes/Skeleton';
 import { EmptyStates } from '../componentes/EmptyState';
 import { MapaServicos } from '../componentes/MapaServicos';
+import * as Location from 'expo-location';
 
 // Ícones para cada categoria
 const CATEGORIA_ICONES: { [key: string]: string } = {
@@ -54,12 +55,55 @@ export default function TelaInicio({ navigation }: TelaInicioProps) {
     const [servicos, setServicos] = useState<any[]>([]);
     const [carregando, setCarregando] = useState<boolean>(true);
     const [atualizando, setAtualizando] = useState<boolean>(false);
+    const [clienteLocation, setClienteLocation] = useState<{ lat: number, lng: number } | null>(null);
+    const [raioFiltro, setRaioFiltro] = useState<number>(10); // km
 
     const { usuario } = useAuth();
 
     useEffect(() => {
         carregarServicos();
+        obterLocalizacaoCliente();
     }, []);
+
+    // Calcular distância entre duas coordenadas (Haversine)
+    const calcularDistancia = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+        const R = 6371; // Raio da Terra em km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    };
+
+    // Obter localização do cliente
+    const obterLocalizacaoCliente = async () => {
+        try {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') return;
+
+            const location = await Location.getCurrentPositionAsync({});
+            setClienteLocation({
+                lat: location.coords.latitude,
+                lng: location.coords.longitude
+            });
+        } catch (error) {
+            console.log('Erro ao obter localização:', error);
+        }
+    };
+
+    // Filtrar serviços por distância
+    const servicosFiltrados = clienteLocation
+        ? servicos.filter(s => {
+            if (!s.coordinates?.lat || !s.coordinates?.lng) return true; // Mostra se não tem coordenadas
+            const dist = calcularDistancia(
+                clienteLocation.lat, clienteLocation.lng,
+                s.coordinates.lat, s.coordinates.lng
+            );
+            return dist <= raioFiltro;
+        })
+        : servicos;
 
     const carregarServicos = async () => {
         try {
@@ -177,23 +221,42 @@ export default function TelaInicio({ navigation }: TelaInicioProps) {
 
             {/* Mapa de Serviços */}
             <View style={{ marginTop: 16 }}>
-                <Text style={{
-                    fontSize: 18,
-                    fontWeight: '600',
-                    marginLeft: 16,
-                    marginBottom: 12,
-                    color: '#1A1A1A'
-                }}>
-                    No Mapa
-                </Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginBottom: 12 }}>
+                    <Text style={{ fontSize: 18, fontWeight: '600', color: '#1A1A1A' }}>
+                        No Mapa
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F5F5F5', borderRadius: 20, padding: 4 }}>
+                        {[5, 10, 25, 50].map(km => (
+                            <TouchableOpacity
+                                key={km}
+                                onPress={() => setRaioFiltro(km)}
+                                style={{
+                                    paddingHorizontal: 12,
+                                    paddingVertical: 6,
+                                    borderRadius: 16,
+                                    backgroundColor: raioFiltro === km ? '#007AFF' : 'transparent',
+                                }}
+                            >
+                                <Text style={{ fontSize: 12, fontWeight: '600', color: raioFiltro === km ? '#FFF' : '#666' }}>
+                                    {km}km
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+                {clienteLocation && (
+                    <Text style={{ fontSize: 12, color: '#666', marginLeft: 16, marginBottom: 8 }}>
+                        📍 Mostrando {servicosFiltrados.filter(s => s.coordinates).length} serviços até {raioFiltro}km de você
+                    </Text>
+                )}
                 <MapaServicos
-                    servicos={servicos.map(s => ({
+                    servicos={servicosFiltrados.map(s => ({
                         id: s._id,
                         titulo: s.title,
                         categoria: s.category,
                         preco: `${s.priceRange.min} - ${s.priceRange.max}`,
-                        lat: s.coordinates?.lat || -8.839988,
-                        lng: s.coordinates?.lng || 13.289437
+                        lat: s.coordinates?.lat || (clienteLocation?.lat || -8.839988),
+                        lng: s.coordinates?.lng || (clienteLocation?.lng || 13.289437)
                     }))}
                     aoSelecionar={(id) => {
                         const s = servicos.find(serv => serv._id === id);
