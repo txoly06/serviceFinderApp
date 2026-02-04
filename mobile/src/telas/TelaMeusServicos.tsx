@@ -117,16 +117,16 @@ export default function TelaMeusServicos({ navigation }: TelaMeusServicosProps) 
                 <View
                     style={[
                         estilos.statusBadge,
-                        { backgroundColor: item.isActive ? '#E8F8ED' : '#FFF0F0' },
+                        { backgroundColor: item.active !== false ? '#E8F8ED' : '#FFF0F0' },
                     ]}
                 >
                     <Text
                         style={[
                             estilos.statusTexto,
-                            { color: item.isActive ? '#34C759' : '#FF3B30' },
+                            { color: item.active !== false ? '#34C759' : '#FF3B30' },
                         ]}
                     >
-                        {item.isActive ? 'Ativo' : 'Inativo'}
+                        {item.active !== false ? 'Ativo' : 'Inativo'}
                     </Text>
                 </View>
             </View>

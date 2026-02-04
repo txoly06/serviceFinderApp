@@ -11,9 +11,20 @@ export const getConversations = async (req, res, next) => {
             .populate('relatedService', 'title')
             .sort({ updatedAt: -1 });
 
+        // Adicionar contagem de mensagens não lidas
+        const conversationsWithUnread = conversations.map(conv => {
+            const unreadCount = conv.messages.filter(
+                msg => !msg.read && msg.sender.toString() !== req.user._id.toString()
+            ).length;
+            return {
+                ...conv.toObject(),
+                unreadCount
+            };
+        });
+
         res.json({
             status: 'success',
-            data: { conversations }
+            data: { conversations: conversationsWithUnread }
         });
     } catch (error) {
         next(error);

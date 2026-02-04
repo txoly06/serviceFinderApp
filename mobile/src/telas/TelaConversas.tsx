@@ -64,9 +64,14 @@ export default function TelaConversas({ navigation }: Props) {
 
     const renderConversa = ({ item }: { item: any }) => {
         const outro = getOutroParticipante(item.participants);
+        const temNaoLidas = item.unreadCount > 0;
+
         return (
             <TouchableOpacity
-                style={estilos.conversaItem}
+                style={[
+                    estilos.conversaItem,
+                    temNaoLidas && { borderLeftWidth: 3, borderLeftColor: '#FF3B30' }
+                ]}
                 onPress={() => navigation.navigate('Chat', {
                     conversationId: item._id,
                     nomeOutro: outro?.name || 'Usuário'
@@ -78,8 +83,10 @@ export default function TelaConversas({ navigation }: Props) {
                     </Text>
                 </View>
                 <View style={estilos.conversaInfo}>
-                    <Text style={estilos.nome}>{outro?.name || 'Usuário'}</Text>
-                    <Text style={estilos.ultimaMensagem} numberOfLines={1}>
+                    <Text style={[estilos.nome, temNaoLidas && { fontWeight: '700' }]}>
+                        {outro?.name || 'Usuário'}
+                    </Text>
+                    <Text style={[estilos.ultimaMensagem, temNaoLidas && { color: '#1A1A1A', fontWeight: '500' }]} numberOfLines={1}>
                         {item.lastMessage?.content || 'Sem mensagens'}
                     </Text>
                 </View>
@@ -87,7 +94,23 @@ export default function TelaConversas({ navigation }: Props) {
                     <Text style={estilos.hora}>
                         {item.lastMessage?.createdAt ? formatarData(item.lastMessage.createdAt) : ''}
                     </Text>
-                    <Ionicons name="chevron-forward" size={16} color="#C7C7CC" />
+                    {temNaoLidas ? (
+                        <View style={{
+                            backgroundColor: '#FF3B30',
+                            borderRadius: 10,
+                            minWidth: 20,
+                            height: 20,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            paddingHorizontal: 6,
+                        }}>
+                            <Text style={{ color: '#FFF', fontSize: 11, fontWeight: '700' }}>
+                                {item.unreadCount > 9 ? '9+' : item.unreadCount}
+                            </Text>
+                        </View>
+                    ) : (
+                        <Ionicons name="chevron-forward" size={16} color="#C7C7CC" />
+                    )}
                 </View>
             </TouchableOpacity>
         );
