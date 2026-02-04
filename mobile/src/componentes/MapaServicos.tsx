@@ -8,13 +8,13 @@ import React from 'react';
 import { View, StyleSheet, Dimensions, Platform, Text } from 'react-native';
 import MapView, { Marker, UrlTile, PROVIDER_DEFAULT } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 
 const { width } = Dimensions.get('window');
 
-// Configuração do Mapbox (Opcional)
-// Substitua SEU_TOKEN_AQUI pelo seu token público do Mapbox se desejar usar
-const MAPBOX_TOKEN = 'pk.eyJ1IjoidHhvbHkwNiIsImEiOiJjbWw0enh6NG0wMWQ3M2VzaTQ5cTd0emh1In0.bnQHTfyS3KhTZ55IlOA-Tw';
-const USE_MAPBOX = true; // Mude para true após colocar o token
+// Configuração do Mapbox via variável de ambiente
+const MAPBOX_TOKEN = Constants.expoConfig?.extra?.mapboxToken || '';
+const USE_MAPBOX = !!MAPBOX_TOKEN;
 
 interface ServicoMapa {
     id: string;
