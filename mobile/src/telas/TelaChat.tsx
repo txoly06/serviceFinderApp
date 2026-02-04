@@ -20,7 +20,7 @@ import { initSocket, getSocket } from '../servicos/socket';
 
 type Props = {
     navigation: NativeStackNavigationProp<RootStackParamList>;
-    route: RouteProp<{ Chat: { conversationId: string; nomeOutro: string } }, 'Chat'>;
+    route: RouteProp<{ Chat: { conversationId: string; nomeOutro: string; serviceTitulo?: string } }, 'Chat'>;
 };
 
 interface Mensagem {
@@ -32,7 +32,7 @@ interface Mensagem {
 }
 
 export default function TelaChat({ navigation, route }: Props) {
-    const { conversationId, nomeOutro } = route.params;
+    const { conversationId, nomeOutro, serviceTitulo } = route.params;
     const { token, usuario } = useAuth();
 
     const [mensagens, setMensagens] = useState<Mensagem[]>([]);
@@ -155,6 +155,24 @@ export default function TelaChat({ navigation, route }: Props) {
                     <Text style={estilos.statusOnline}>Online agora</Text>
                 </View>
             </View>
+
+            {/* Service Context Banner */}
+            {serviceTitulo && (
+                <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: '#E8F4FF',
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    borderBottomWidth: 1,
+                    borderBottomColor: '#D0E8FF',
+                }}>
+                    <Ionicons name="briefcase-outline" size={16} color="#007AFF" />
+                    <Text style={{ marginLeft: 8, fontSize: 13, color: '#007AFF', fontWeight: '500' }}>
+                        Sobre: {serviceTitulo}
+                    </Text>
+                </View>
+            )}
 
             {/* Mensagens */}
             <FlatList

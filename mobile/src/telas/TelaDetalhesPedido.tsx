@@ -205,7 +205,8 @@ export default function TelaDetalhesPedido({ navigation, route }: TelaDetalhesPe
                                                 const resp = await iniciarConversa(token!, outroId, pedido.serviceId?._id);
                                                 navigation.navigate('Chat', {
                                                     conversationId: resp.data.conversation._id,
-                                                    nomeOutro: outroNome || 'Usuário'
+                                                    nomeOutro: outroNome || 'Usuário',
+                                                    serviceTitulo: pedido.serviceId?.title
                                                 });
                                             } catch (e: any) {
                                                 Alert.alert('Erro', e.message || 'Não foi possível iniciar conversa');

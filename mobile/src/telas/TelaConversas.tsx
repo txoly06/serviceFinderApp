@@ -65,6 +65,7 @@ export default function TelaConversas({ navigation }: Props) {
     const renderConversa = ({ item }: { item: any }) => {
         const outro = getOutroParticipante(item.participants);
         const temNaoLidas = item.unreadCount > 0;
+        const serviceTitulo = item.relatedService?.title;
 
         return (
             <TouchableOpacity
@@ -74,7 +75,8 @@ export default function TelaConversas({ navigation }: Props) {
                 ]}
                 onPress={() => navigation.navigate('Chat', {
                     conversationId: item._id,
-                    nomeOutro: outro?.name || 'Usuário'
+                    nomeOutro: outro?.name || 'Usuário',
+                    serviceTitulo: serviceTitulo
                 })}
             >
                 <View style={estilos.avatar}>
@@ -86,6 +88,11 @@ export default function TelaConversas({ navigation }: Props) {
                     <Text style={[estilos.nome, temNaoLidas && { fontWeight: '700' }]}>
                         {outro?.name || 'Usuário'}
                     </Text>
+                    {serviceTitulo && (
+                        <Text style={{ fontSize: 11, color: '#007AFF', marginBottom: 2 }} numberOfLines={1}>
+                            {serviceTitulo}
+                        </Text>
+                    )}
                     <Text style={[estilos.ultimaMensagem, temNaoLidas && { color: '#1A1A1A', fontWeight: '500' }]} numberOfLines={1}>
                         {item.lastMessage?.content || 'Sem mensagens'}
                     </Text>

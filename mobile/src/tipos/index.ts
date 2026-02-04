@@ -171,7 +171,7 @@ export type RootStackParamList = {
     EditarServico: { servico: ServiceAPI };
     Avaliar: { pedido: RequestAPI };
     Conversas: undefined;
-    Chat: { conversationId: string; nomeOutro: string };
+    Chat: { conversationId: string; nomeOutro: string; serviceTitulo?: string };
     Favoritos: undefined;
     DashboardProvider: undefined;
     EditarPerfil: undefined;

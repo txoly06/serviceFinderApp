@@ -173,14 +173,16 @@ export default function TelaPedidos({ navigation }: TelaPedidosProps) {
             </View>
 
             {/* Filtros */}
-            <FlatList
-                data={FILTROS}
-                renderItem={renderFiltro}
-                keyExtractor={(item) => item.id}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={estilos.filtrosContainer}
-            />
+            <View style={{ paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#F8F9FA' }}>
+                <FlatList
+                    data={FILTROS}
+                    renderItem={renderFiltro}
+                    keyExtractor={(item) => item.id}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ gap: 8 }}
+                />
+            </View>
 
             {/* Lista de Pedidos */}
             {pedidosFiltrados.length === 0 ? (
