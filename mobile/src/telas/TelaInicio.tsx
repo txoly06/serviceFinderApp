@@ -16,6 +16,9 @@ import {
     ActivityIndicator,
     RefreshControl,
     Image,
+    TextInput,
+    Keyboard,
+    TouchableWithoutFeedback,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -57,6 +60,7 @@ export default function TelaInicio({ navigation }: TelaInicioProps) {
     const [atualizando, setAtualizando] = useState<boolean>(false);
     const [clienteLocation, setClienteLocation] = useState<{ lat: number, lng: number } | null>(null);
     const [raioFiltro, setRaioFiltro] = useState<number>(10); // km
+    const [pesquisa, setPesquisa] = useState<string>('');
 
     const { usuario } = useAuth();
 
@@ -93,17 +97,27 @@ export default function TelaInicio({ navigation }: TelaInicioProps) {
         }
     };
 
-    // Filtrar serviços por distância
-    const servicosFiltrados = clienteLocation
-        ? servicos.filter(s => {
-            if (!s.coordinates?.lat || !s.coordinates?.lng) return true; // Mostra se não tem coordenadas
+    // Filtrar serviços por distância e pesquisa
+    const servicosFiltrados = servicos.filter(s => {
+        // Filtro de pesquisa
+        if (pesquisa.trim()) {
+            const termo = pesquisa.toLowerCase();
+            const matchTitulo = s.title?.toLowerCase().includes(termo);
+            const matchCategoria = s.category?.toLowerCase().includes(termo);
+            if (!matchTitulo && !matchCategoria) return false;
+        }
+
+        // Filtro de distância
+        if (clienteLocation && s.coordinates?.lat && s.coordinates?.lng) {
             const dist = calcularDistancia(
                 clienteLocation.lat, clienteLocation.lng,
                 s.coordinates.lat, s.coordinates.lng
             );
-            return dist <= raioFiltro;
-        })
-        : servicos;
+            if (dist > raioFiltro) return false;
+        }
+
+        return true;
+    });
 
     const carregarServicos = async () => {
         try {
@@ -262,6 +276,7 @@ export default function TelaInicio({ navigation }: TelaInicioProps) {
                         const s = servicos.find(serv => serv._id === id);
                         if (s) navigation.navigate('DetalhesServico', { servico: s });
                     }}
+                    clientLocation={clienteLocation}
                 />
             </View>
 
@@ -269,11 +284,21 @@ export default function TelaInicio({ navigation }: TelaInicioProps) {
             <View style={estilos.pesquisaContainer}>
                 <View style={estilos.pesquisaInput}>
                     <Ionicons name="search" size={20} color="#666" />
-                    <Text style={estilos.pesquisaPlaceholder}>Pesquisar serviços...</Text>
+                    <TextInput
+                        style={{ flex: 1, marginLeft: 12, fontSize: 15, color: '#1A1A1A' }}
+                        placeholder="Pesquisar serviços..."
+                        placeholderTextColor="#999"
+                        value={pesquisa}
+                        onChangeText={setPesquisa}
+                        returnKeyType="search"
+                        onSubmitEditing={() => Keyboard.dismiss()}
+                    />
+                    {pesquisa.length > 0 && (
+                        <TouchableOpacity onPress={() => setPesquisa('')}>
+                            <Ionicons name="close-circle" size={20} color="#999" />
+                        </TouchableOpacity>
+                    )}
                 </View>
-                <TouchableOpacity style={estilos.filtroBotao}>
-                    <Ionicons name="options" size={20} color="#007AFF" />
-                </TouchableOpacity>
             </View>
 
             {/* Categorias */}

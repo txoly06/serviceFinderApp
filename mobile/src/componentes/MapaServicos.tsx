@@ -28,13 +28,14 @@ interface ServicoMapa {
 interface MapaProps {
     servicos: ServicoMapa[];
     aoSelecionar: (id: string) => void;
+    clientLocation?: { lat: number; lng: number } | null;
 }
 
-export function MapaServicos({ servicos, aoSelecionar }: MapaProps) {
-    // Coordenada inicial (Luanda, Angola como padrão)
+export function MapaServicos({ servicos, aoSelecionar, clientLocation }: MapaProps) {
+    // Coordenada inicial (usa localização do cliente ou Luanda como padrão)
     const initialRegion = {
-        latitude: -8.839988,
-        longitude: 13.289437,
+        latitude: clientLocation?.lat || -8.839988,
+        longitude: clientLocation?.lng || 13.289437,
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421,
     };
