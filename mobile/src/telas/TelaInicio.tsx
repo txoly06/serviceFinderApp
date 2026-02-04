@@ -192,8 +192,8 @@ export default function TelaInicio({ navigation }: TelaInicioProps) {
                         titulo: s.title,
                         categoria: s.category,
                         preco: `${s.priceRange.min} - ${s.priceRange.max}`,
-                        lat: s.location?.coordinates?.lat || -8.839988,
-                        lng: s.location?.coordinates?.lng || 13.289437
+                        lat: s.coordinates?.lat || -8.839988,
+                        lng: s.coordinates?.lng || 13.289437
                     }))}
                     aoSelecionar={(id) => {
                         const s = servicos.find(serv => serv._id === id);

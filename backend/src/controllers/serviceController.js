@@ -17,6 +17,11 @@ const createServiceSchema = z.object({
     location: z.object({
         city: z.string(),
         state: z.string()
+    }).optional(),
+    images: z.array(z.string()).optional(),
+    coordinates: z.object({
+        lat: z.number(),
+        lng: z.number()
     }).optional()
 });
 

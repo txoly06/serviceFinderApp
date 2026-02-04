@@ -21,6 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import { RootStackParamList } from '../tipos';
 import { useAuth } from '../contextos/AuthContext';
 import { criarServico, atualizarServico, uploadImages } from '../servicos/api';
@@ -57,6 +58,9 @@ export default function TelaNovoServico({ navigation, route }: TelaNovoServicoPr
     const [estado, setEstado] = useState(servicoExistente?.location?.state || '');
     const [imagens, setImagens] = useState<string[]>(servicoExistente?.images || []);
     const [uploadingImages, setUploadingImages] = useState(false);
+    const [coordinates, setCoordinates] = useState<{ lat: number, lng: number } | null>(
+        servicoExistente?.coordinates || null
+    );
 
     // Selecionar imagens
     const selecionarImagens = async () => {
@@ -91,6 +95,26 @@ export default function TelaNovoServico({ navigation, route }: TelaNovoServicoPr
     // Remover imagem
     const removerImagem = (index: number) => {
         setImagens(prev => prev.filter((_, i) => i !== index));
+    };
+
+    // Obter localização GPS atual
+    const obterLocalizacao = async () => {
+        try {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permissão negada', 'Precisamos de permissão para acessar a localização');
+                return;
+            }
+
+            const location = await Location.getCurrentPositionAsync({});
+            setCoordinates({
+                lat: location.coords.latitude,
+                lng: location.coords.longitude
+            });
+            Alert.alert('Sucesso', 'Localização GPS capturada!');
+        } catch (error) {
+            Alert.alert('Erro', 'Não foi possível obter a localização');
+        }
     };
 
     const validarForm = (): boolean => {
@@ -129,6 +153,7 @@ export default function TelaNovoServico({ navigation, route }: TelaNovoServicoPr
                 state: estado.trim() || 'Luanda',
             },
             images: imagens,
+            coordinates: coordinates,
         };
 
         try {
@@ -317,6 +342,15 @@ export default function TelaNovoServico({ navigation, route }: TelaNovoServicoPr
                                 />
                             </View>
                         </View>
+                        <TouchableOpacity
+                            style={estilos.gpsButton}
+                            onPress={obterLocalizacao}
+                        >
+                            <Ionicons name="navigate" size={20} color="#007AFF" />
+                            <Text style={estilos.gpsButtonText}>
+                                {coordinates ? 'GPS Capturado ✓' : 'Capturar GPS'}
+                            </Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
 
@@ -523,5 +557,22 @@ const estilos = StyleSheet.create({
         fontSize: 10,
         color: '#007AFF',
         marginTop: 4,
+    },
+    gpsButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#E8F4FF',
+        padding: 12,
+        borderRadius: 10,
+        marginTop: 12,
+        borderWidth: 1,
+        borderColor: '#007AFF',
+    },
+    gpsButtonText: {
+        color: '#007AFF',
+        fontSize: 14,
+        fontWeight: '600',
+        marginLeft: 8,
     },
 });

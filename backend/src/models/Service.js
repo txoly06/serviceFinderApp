@@ -57,6 +57,10 @@ const serviceSchema = new mongoose.Schema({
         city: String,
         state: String
     },
+    coordinates: {
+        lat: Number,
+        lng: Number
+    },
     active: {
         type: Boolean,
         default: true
