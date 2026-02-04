@@ -246,7 +246,7 @@ export default function TelaInicio({ navigation }: TelaInicioProps) {
                 </View>
                 {clienteLocation && (
                     <Text style={{ fontSize: 12, color: '#666', marginLeft: 16, marginBottom: 8 }}>
-                        📍 Mostrando {servicosFiltrados.filter(s => s.coordinates).length} serviços até {raioFiltro}km de você
+                        Mostrando {servicosFiltrados.filter(s => s.coordinates).length} serviços até {raioFiltro}km de você
                     </Text>
                 )}
                 <MapaServicos

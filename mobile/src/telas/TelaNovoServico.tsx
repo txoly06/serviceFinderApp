@@ -348,7 +348,7 @@ export default function TelaNovoServico({ navigation, route }: TelaNovoServicoPr
                         >
                             <Ionicons name="navigate" size={20} color="#007AFF" />
                             <Text style={estilos.gpsButtonText}>
-                                {coordinates ? 'GPS Capturado ✓' : 'Capturar GPS'}
+                                {coordinates ? 'GPS Capturado' : 'Capturar GPS'}
                             </Text>
                         </TouchableOpacity>
                     </View>

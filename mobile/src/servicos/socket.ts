@@ -24,11 +24,11 @@ export const initSocket = (token: string) => {
     });
 
     socket.on('disconnect', () => {
-        console.log('❌ Socket disconnected');
+        console.log('[SOCKET] Disconnected');
     });
 
     socket.on('connect_error', (err) => {
-        console.log('⚠️ Socket connection error:', err.message);
+        console.log('[SOCKET] Connection error:', err.message);
     });
 
     return socket;
